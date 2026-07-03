@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Aposentadoria e Abono — RPPS/RN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1F4E78;
+    --navy-deep:#163a5b;
+    --blue:#2F75B5;
+    --blue-light:#EAF4FF;
+    --blue-pale:#F5F8FC;
+    --green:#2F9E44;
+    --green-bg:#E8F6EC;
+    --green-ink:#1E6B34;
+    --amber:#9A6B08;
+    --amber-bg:#FFF6DD;
+    --ink:#1F2937;
+    --ink-soft:#5B6B84;
+    --ink-faint:#64748B;
+    --white:#FFFFFF;
+    --border:#DDE4ED;
+    --border-soft:#EBF0F6;
+    --radius:10px;
+    --font-display:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --font-body:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --shadow-card:0 1px 2px rgba(31,78,120,0.06), 0 8px 24px -12px rgba(31,78,120,0.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 100% -10%, #eef4fb 0%, transparent 60%),
+      var(--blue-pale);
+    min-height:100vh;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:1180px;margin:0 auto;padding:0 20px 64px;}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+    color:#fff;
+    margin:0 -20px 28px;
+    padding:30px 20px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.10) 1px, transparent 0);
+    background-size:22px 22px;
+    opacity:0.5;
+  }
+  .topbar-inner{max-width:1140px;margin:0 auto;position:relative;}
+  .eyebrow{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:#BFD7EE; font-weight:600; margin:0 0 8px;
+  }
+  h1.title{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(22px, 3.2vw, 32px);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .topbar p.sub{
+    margin:0; color:#D7E6F5; font-size:14.5px; max-width:640px;
+  }
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:1.15fr 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:940px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-card);
+  }
+
+  /* ---------- form ---------- */
+  .form-panel{padding:6px 0 0;}
+  fieldset{
+    border:0; margin:0; padding:20px 24px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  fieldset:last-of-type{border-bottom:0;}
+  legend{
+    font-weight:700; font-size:13px; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--blue);
+    padding:0; margin-bottom:14px;
+  }
+  .field-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px 16px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .field .hint{font-size:11.5px; color:var(--ink-faint); font-weight:400; margin-top:-2px;}
+  input[type=text], input[type=date], input[type=number], select, textarea{
+    font-family:var(--font-body);
+    font-size:14px;
+    padding:9px 10px;
+    border:1px solid var(--border);
+    border-radius:7px;
+    background:var(--blue-light);
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s, box-shadow .15s, background .15s;
+    width:100%;
+  }
+  textarea{resize:vertical; min-height:56px; font-size:13.5px;}
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(47,117,181,0.16);
+    background:#fff;
+  }
+  input:required:invalid{ }
+  .field.invalid input, .field.invalid select{
+    border-color:#D64545; background:#FDF1F1;
+  }
+  .field .error-msg{font-size:11.5px; color:#B23A3A; display:none;}
+  .field.invalid .error-msg{display:block;}
+
+  .calc-actions{
+    display:flex; align-items:center; gap:12px;
+    padding:18px 24px 22px;
+  }
+  button.primary{
+    background:var(--blue);
+    color:#fff; border:none; border-radius:8px;
+    font-family:var(--font-body); font-weight:700; font-size:14px;
+    padding:11px 22px; cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  button.primary:hover{background:var(--navy);}
+  button.primary:active{transform:translateY(1px);}
+  .live-indicator{font-size:12px; color:var(--ink-faint); display:flex; align-items:center; gap:6px;}
+  .live-dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 3px var(--green-bg);}
+
+  /* ---------- results panel ---------- */
+  .results-panel{position:sticky; top:20px; display:flex; flex-direction:column; gap:16px;}
+  @media (max-width:940px){ .results-panel{position:static;} }
+
+  .timeline-card{padding:22px 24px 20px;}
+  .timeline-card h2{
+    font-family:var(--font-display); font-size:15.5px; font-weight:600;
+    margin:0 0 4px; color:var(--navy);
+  }
+  .timeline-card .regra{font-size:12.5px; color:var(--ink-soft); margin:0 0 18px;}
+  .pct-row{display:flex; align-items:baseline; gap:8px; margin-bottom:10px;}
+  .pct-number{font-family:var(--font-display); font-size:40px; font-weight:700; color:var(--navy); line-height:1;}
+  .pct-label{font-size:12.5px; color:var(--ink-soft); font-weight:600;}
+  .track{
+    position:relative; height:10px; border-radius:6px;
+    background:var(--border-soft); overflow:visible; margin:14px 0 8px;
+  }
+  .track-fill{
+    position:absolute; left:0; top:0; height:100%; border-radius:6px;
+    background:linear-gradient(90deg, #6FA8DC, var(--blue) 70%, var(--navy));
+    transition:width .5s cubic-bezier(.4,0,.2,1);
+    width:0%;
+  }
+  .track-fill.done{background:linear-gradient(90deg, #6FCF97, var(--green));}
+  .track-marker{
+    position:absolute; top:50%; width:16px; height:16px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue);
+    transform:translate(-50%,-50%); left:0%;
+    transition:left .5s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 1px 4px rgba(31,78,120,.35);
+  }
+  .track-marker.done{border-color:var(--green);}
+  .track-labels{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-faint); margin-top:4px;}
+  .track-labels span:last-child{text-align:right;}
+  .track-labels b{color:var(--ink-soft); font-weight:600; display:block; font-size:11.5px;}
+
+  .status-banner{
+    padding:14px 18px; border-radius:9px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:10px;
+    border:1px solid transparent;
+  }
+  .status-banner.pending{background:var(--blue-light); color:var(--navy); border-color:#CFE3F6;}
+  .status-banner.met{background:var(--green-bg); color:var(--green-ink); border-color:#C9E9D2;}
+  .status-banner.manual{background:var(--amber-bg); color:var(--amber); border-color:#F1E1AE;}
+  .status-banner.empty{background:var(--border-soft); color:var(--ink-faint); border-color:var(--border-soft);}
+  .status-dot{width:8px; height:8px; border-radius:50%; background:currentColor; flex:none;}
+
+  .results-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    padding:0 24px 4px;
+  }
+  .result-card{
+    background:var(--blue-pale); border:1px solid var(--border-soft);
+    border-radius:8px; padding:10px 12px;
+  }
+  .result-card .k{font-size:11px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px;}
+  .result-card .v{font-size:14.5px; font-weight:700; color:var(--ink); font-family:var(--font-display);}
+  .result-card.wide{grid-column:1/-1;}
+  .result-card.hl{background:var(--blue-light); border-color:#CFE3F6;}
+
+  .alerts-box{margin:0 24px 4px; padding:12px 14px; background:var(--amber-bg); border:1px solid #F1E1AE; border-radius:8px; display:none;}
+  .alerts-box.show{display:block;}
+  .alerts-box .k{font-size:11px; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;}
+  .alerts-box ul{margin:0; padding-left:18px; font-size:12.5px; color:#6b4d06;}
+  .alerts-box li{margin-bottom:2px;}
+
+  .panel-footer{padding:14px 24px 22px; display:flex; gap:10px; flex-wrap:wrap;}
+  button.secondary{
+    background:#fff; color:var(--blue); border:1px solid var(--blue);
+    border-radius:7px; font-family:var(--font-body); font-weight:600; font-size:12.5px;
+    padding:8px 14px; cursor:pointer; transition:background .15s;
+  }
+  button.secondary:hover{background:var(--blue-light);}
+  .copied-msg{font-size:12px; color:var(--green-ink); align-self:center; display:none;}
+  .copied-msg.show{display:inline;}
+
+  .notes-card{padding:16px 22px; font-size:12px; color:var(--ink-soft); line-height:1.6;}
+  .notes-card b{color:var(--ink);}
+  .notes-card ol{margin:6px 0 0; padding-left:18px;}
+
+  footer.page-footer{
+    text-align:center; font-size:11.5px; color:var(--ink-faint); margin-top:28px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <p class="eyebrow">RPPS/RN · EC Estadual 20/2020</p>
+      <h1 class="title">Calculadora Individual — Aposentadoria e Abono de Permanência</h1>
+      <p class="sub">Preencha os dados do servidor para estimar a data de elegibilidade, a regra mais favorável e o progresso até a aposentadoria. Versão HTML da calculadora usada pelo N.E.U.</p>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ================= FORM ================= -->
+    <section class="panel form-panel">
+      <form id="calcForm" novalidate>
+
+        <fieldset>
+          <legend>Identificação</legend>
+          <div class="field-grid">
+            <div class="field full">
+              <label for="nome">Nome</label>
+              <input type="text" id="nome" placeholder="Nome do servidor">
+            </div>
+            <div class="field">
+              <label for="sexo">Sexo *</label>
+              <select id="sexo" required>
+                <option value="">Selecione</option>
+                <option value="F">F</option>
+                <option value="M">M</option>
+              </select>
+              <span class="error-msg">Informe F ou M.</span>
+            </div>
+            <div class="field">
+              <label for="ativo">Está em atividade? *</label>
+              <select id="ativo" required>
+                <option value="">Selecione</option>
+                <option value="Sim">Sim</option>
+                <option value="Não">Não</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Datas</legend>
+          <div class="field-grid">
+            <div class="field">
+              <label for="nascimento">Nascimento *</label>
+              <input type="date" id="nascimento" required>
+            </div>
+            <div class="field">
+              <label for="dataInicioRN">Data início no Estado/RN *</label>
+              <input type="date" id="dataInicioRN" required>
+            </div>
+            <div class="field">
+              <label for="dataIngressoSP">Data ingresso serviço público</label>
+              <input type="date" id="dataIngressoSP">
+              <span class="hint">Opcional — se vazio, usa a data de início no RN.</span>
+            </div>
+            <div class="field">
+              <label for="dataIngressoCarreira">Data ingresso carreira</label>
+              <input type="date" id="dataIngressoCarreira">
+              <span class="hint">Opcional — relevante para policial/penal/socioeducativo.</span>
+            </div>
+            <div class="field full">
+              <label for="dataIngressoCargo">Data ingresso cargo atual</label>
+              <input type="date" id="dataIngressoCargo">
+              <span class="hint">Opcional — se vazio, usa a data de início no RN.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Enquadramento</legend>
+          <div class="field-grid">
+            <div class="field full">
+              <label for="categoria">Categoria *</label>
+              <select id="categoria" required>
+                <option value="">Selecione</option>
+                <option value="Geral">Geral</option>
+                <option value="Professor">Professor</option>
+                <option value="Policial/penal/socioeducativo">Policial/penal/socioeducativo</option>
+                <option value="Atividade especial">Atividade especial</option>
+                <option value="PcD">PcD</option>
+                <option value="Militar estadual">Militar estadual</option>
+                <option value="Outro/análise manual">Outro/análise manual</option>
+              </select>
+              <span class="hint">Categoria define a regra aplicável.</span>
+            </div>
+            <div class="field full">
+              <label for="comprovacao">Comprovação específica? *</label>
+              <select id="comprovacao" required>
+                <option value="">Selecione</option>
+                <option value="Sim">Sim</option>
+                <option value="Não">Não</option>
+              </select>
+              <span class="hint">Deve ser "Sim" para professor, atividade especial e policial/penal/socioeducativo.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Tempos anteriores (dias)</legend>
+          <div class="field-grid">
+            <div class="field">
+              <label for="tcPrevDias">Contribuição anterior fora do serviço público</label>
+              <input type="number" id="tcPrevDias" value="0" min="0" step="1">
+            </div>
+            <div class="field">
+              <label for="spPrevDias">Serviço público anterior averbado</label>
+              <input type="number" id="spPrevDias" value="0" min="0" step="1">
+              <span class="hint">Conta também como contribuição — não duplique esse período no campo anterior.</span>
+            </div>
+            <div class="field">
+              <label for="carPrevDias">Tempo anterior carreira específica</label>
+              <input type="number" id="carPrevDias" value="0" min="0" step="1">
+            </div>
+            <div class="field">
+              <label for="diasExc">Dias não computáveis</label>
+              <input type="number" id="diasExc" value="0" min="0" step="1">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Observações</legend>
+          <div class="field full">
+            <textarea id="observacoes" placeholder="Notas internas (não entram no cálculo)"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="calc-actions">
+          <button type="submit" class="primary">Calcular</button>
+          <span class="live-indicator"><span class="live-dot"></span>Recalcula automaticamente ao editar</span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ================= RESULTS ================= -->
+    <aside class="results-panel">
+
+      <div class="panel timeline-card">
+        <h2 id="dataMaisCedoLabel">—</h2>
+        <p class="regra" id="regraLabel">Preencha os dados para calcular</p>
+
+        <div class="pct-row">
+          <span class="pct-number" id="pctNumber">—</span>
+          <span class="pct-label">do caminho até a elegibilidade</span>
+        </div>
+        <div class="track">
+          <div class="track-fill" id="trackFill"></div>
+          <div class="track-marker" id="trackMarker"></div>
+        </div>
+        <div class="track-labels">
+          <span><b>Início</b><span id="lblInicio">—</span></span>
+          <span><b>Elegibilidade</b><span id="lblFim">—</span></span>
+        </div>
+      </div>
+
+      <div class="status-banner empty" id="statusBanner">
+        <span class="status-dot"></span>
+        <span id="statusText">Aguardando dados do servidor…</span>
+      </div>
+
+      <div class="panel" style="padding-top:16px;">
+        <div class="results-grid">
+          <div class="result-card hl">
+            <div class="k">Data mais cedo</div>
+            <div class="v" id="rDataMaisCedo">—</div>
+          </div>
+          <div class="result-card hl">
+            <div class="k">Início provável do abono</div>
+            <div class="v" id="rAbono">—</div>
+          </div>
+          <div class="result-card wide">
+            <div class="k">Regra mais favorável</div>
+            <div class="v" id="rRegra" style="font-size:13.5px;">—</div>
+          </div>
+          <div class="result-card">
+            <div class="k">Idade na data</div>
+            <div class="v" id="rIdade">—</div>
+          </div>
+          <div class="result-card">
+            <div class="k">Tempo de contribuição</div>
+            <div class="v" id="rContrib">—</div>
+          </div>
+          <div class="result-card">
+            <div class="k">Serviço público</div>
+            <div class="v" id="rSP">—</div>
+          </div>
+          <div class="result-card">
+            <div class="k">Cargo atual</div>
+            <div class="v" id="rCargo">—</div>
+          </div>
+        </div>
+
+        <div class="alerts-box" id="alertsBox">
+          <div class="k">Alertas</div>
+          <ul id="alertsList"></ul>
+        </div>
+
+        <div class="panel-footer">
+          <button type="button" class="secondary" id="btnCopy">Copiar resumo</button>
+          <button type="button" class="secondary" id="btnReset">Limpar formulário</button>
+          <span class="copied-msg" id="copiedMsg">Copiado ✓</span>
+        </div>
+      </div>
+
+      <div class="panel notes-card">
+        <b>Notas de uso</b>
+        <ol>
+          <li>Para professor, policial/penal/socioeducativo e atividade especial, marque "Sim" em comprovação específica.</li>
+          <li>Tempo anterior deve ser informado em dias, conforme CTC/averbação.</li>
+          <li>Serviço público anterior averbado conta também como contribuição — não lance o mesmo período duas vezes.</li>
+          <li>A transição do art. 7º (pedágio 50%) usa o redutor de idade validado contra simulação do IPERN.</li>
+          <li>Para quem ingressou no serviço público até 16/12/1998, o direito adquirido também considera a regra de transição da EC Federal nº 47/2005 (idade reduzida em troca de mais tempo de contribuição) — a calculadora usa automaticamente a data mais favorável entre as duas regras.</li>
+          <li>Esta calculadora estima datas; confira sempre CTC, ficha funcional, afastamentos, licenças e ato administrativo.</li>
+          <li>PcD e militar estadual são mantidos como análise manual.</li>
+        </ol>
+      </div>
+
+    </aside>
+  </div>
+
+  <footer class="page-footer">
+    Cálculo automático baseado na EC Estadual RN 20/2020 · Confirme sempre com a documentação funcional antes de peticionar.
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// Engine de cálculo — porte fiel de CALCULADORA / LOTE_SERVIDORES
+// / _AUX_CALC / REGRAS — v3, com o "redutor IPERN" do art. 7º, a
+// contagem combinada de tempo anterior (contribuição + serviço
+// público) e a regra de transição da EC Federal nº 47/2005 (art. 3º,
+// idade reduzida em troca de mais contribuição, para quem ingressou
+// até 16/12/1998). Validada contra o caso Magno Pereira da Silva
+// (simulação IPERN: 11/04/2025) e contra 4 outros casos de teste.
+// ============================================================
+(function(){
+
+// ============================================================
+// Engine de cálculo — porte fiel de CALCULADORA / LOTE_SERVIDORES
+// / _AUX_CALC / REGRAS — v2, com o "redutor IPERN" do art. 7º e
+// a contagem combinada de tempo anterior (contribuição + serviço
+// público) validados contra o caso Magno Pereira da Silva
+// (IPERN: 11/04/2025).
+// ============================================================
+
+function isLeapYear(year) {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
+function Dt(y, m, d) {
+  return new Date(y, m - 1, d);
+}
+
+function daysBetween(a, b) {
+  return Math.round((b.getTime() - a.getTime()) / 86400000);
+}
+
+function addDays(date, days) {
+  const r = new Date(date.getTime());
+  r.setDate(r.getDate() + Math.round(days));
+  return r;
+}
+
+function edate(date, months) {
+  const totalMonths = date.getFullYear() * 12 + date.getMonth() + months;
+  const targetY = Math.floor(totalMonths / 12);
+  const targetM = ((totalMonths % 12) + 12) % 12;
+  const lastDay = new Date(targetY, targetM + 1, 0).getDate();
+  const targetD = Math.min(date.getDate(), lastDay);
+  return new Date(targetY, targetM, targetD);
+}
+
+// Serial de dia inteiro, imune a fuso-horário/horário de verão:
+// extrai só os componentes de calendário (Y/M/D) e usa Date.UTC
+// como aritmética neutra (nunca exibida, só usada em diferenças).
+function toSerial(date) {
+  return Math.round(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
+}
+function serialToDate(serial) {
+  const d = new Date(serial * 86400000);
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+function excelRoundDown(x) {
+  return x >= 0 ? Math.floor(x) : Math.ceil(x);
+}
+
+function yearFrac(startDate, endDate) {
+  const sd = startDate.getDate(), sm = startDate.getMonth() + 1, sy = startDate.getFullYear();
+  const ed = endDate.getDate(), em = endDate.getMonth() + 1, ey = endDate.getFullYear();
+
+  const feb29Between = (date1, date2) => {
+    const year1 = date1.getFullYear();
+    const mar1year1 = new Date(year1, 2, 1);
+    if (isLeapYear(year1) && date1 < mar1year1 && date2 >= mar1year1) return true;
+    const year2 = date2.getFullYear();
+    const mar1year2 = new Date(year2, 2, 1);
+    return isLeapYear(year2) && date2 >= mar1year2 && date1 < mar1year2;
+  };
+
+  let ylength = 365;
+  if (sy === ey || (sy + 1 === ey && (sm > em || (sm === em && sd >= ed)))) {
+    if ((sy === ey && isLeapYear(sy)) || feb29Between(startDate, endDate) || (em === 1 && ed === 29)) {
+      ylength = 366;
+    }
+    return daysBetween(startDate, endDate) / ylength;
+  }
+  const years = ey - sy + 1;
+  const days = (new Date(ey + 1, 0, 1).getTime() - new Date(sy, 0, 1).getTime()) / 86400000;
+  const average = days / years;
+  return daysBetween(startDate, endDate) / average;
+}
+
+function roundUpMonths(years) {
+  return Math.ceil(Math.round(years * 12 * 1e6) / 1e6);
+}
+
+function maxDate(...dates) { return new Date(Math.max(...dates.map((d) => d.getTime()))); }
+function minDate(...dates) { return new Date(Math.min(...dates.map((d) => d.getTime()))); }
+
+const EC20_CUTOFF = Dt(2020, 9, 30);
+const EC98_CUTOFF = Dt(1998, 12, 16); // corte da EC Federal nº 20/1998, usado pela regra de transição da EC 47/2005
+
+function fmtDate(d) {
+  if (!d) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+function fmtNum(n){
+  if(n==null) return "";
+  return n.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function calcular(input) {
+  const {
+    sexo, nascimento, dataInicioRN,
+    categoria, comprovacao,
+    tcPrevDias = 0, spPrevDias = 0, carPrevDias = 0, diasExc = 0,
+    ativo,
+  } = input;
+  const hoje = input.hoje || (() => { const n = new Date(); return Dt(n.getFullYear(), n.getMonth() + 1, n.getDate()); })();
+
+  if (!sexo || !nascimento || !dataInicioRN) {
+    return { erro: "Preencha ao menos Sexo, Nascimento e Data início no Estado/RN." };
+  }
+
+  const dtContrib = dataInicioRN;
+  const dtServPub = input.dataIngressoSP || dataInicioRN;
+  const dtCarreira = input.dataIngressoCarreira || dataInicioRN;
+  const dtCargo = input.dataIngressoCargo || dataInicioRN;
+
+  const profOK = categoria === "Professor" && comprovacao === "Sim";
+  const geralOK = categoria === "Geral";
+  const espOK = categoria === "Atividade especial" && comprovacao === "Sim";
+  const polOK = categoria === "Policial/penal/socioeducativo" && comprovacao === "Sim";
+  const manual = categoria === "PcD" || categoria === "Militar estadual" || categoria === "Outro/análise manual";
+  const entradaAntesEC20 = dtServPub <= EC20_CUTOFF;
+
+  // NOVO: tempo anterior de serviço público agora também conta como
+  // contribuição (spPrevDias somado a tcPrevDias no cálculo de
+  // contribuição), conforme ajuste do usuário/IPERN.
+  const PREV_CONTRIB = tcPrevDias + spPrevDias;
+
+  const contribCutoff = yearFrac(dtContrib, EC20_CUTOFF) + PREV_CONTRIB / 365.25 - diasExc / 365.25;
+  const pontosCutoff = yearFrac(nascimento, EC20_CUTOFF) + contribCutoff;
+
+  const basePts = profOK ? (sexo === "F" ? 76 : 86) : (sexo === "F" ? 86 : 96);
+  const capPts = profOK
+    ? (dtServPub <= Dt(1998, 12, 16) ? (sexo === "F" ? 78 : 88) : dtServPub <= Dt(2003, 12, 31) ? (sexo === "F" ? 81 : 91) : (sexo === "F" ? 82 : 95))
+    : (dtServPub <= Dt(1998, 12, 16) ? (sexo === "F" ? 90 : 100) : dtServPub <= Dt(2003, 12, 31) ? (sexo === "F" ? 92 : 102) : (sexo === "F" ? 95 : 105));
+  const anosAtePts = Math.max(0,
+    (basePts - pontosCutoff) <= (capPts - basePts)
+      ? (basePts - pontosCutoff)
+      : Math.max(capPts - basePts, (capPts - pontosCutoff) / 2)
+  );
+  const dataPts = edate(EC20_CUTOFF, roundUpMonths(anosAtePts));
+
+  const permOK = geralOK || profOK || espOK || polOK;
+  const permIdade = polOK ? (sexo === "F" ? 52 : 55) : profOK ? (sexo === "F" ? 53 : 58) : espOK ? (sexo === "F" ? 55 : 60) : (sexo === "F" ? 60 : 65);
+  const permContrib = polOK ? (sexo === "F" ? 27 : 30) : 25;
+  const permSP = polOK ? 0 : 10;
+  const permCar = polOK ? (sexo === "F" ? 17 : 20) : 0;
+  const permCargo = polOK ? 0 : 5;
+
+  const art6OK = entradaAntesEC20 && (geralOK || profOK);
+  const art6Idade = profOK
+    ? (sexo === "F" ? (edate(nascimento, 51 * 12) < Dt(2023, 1, 1) ? 51 : 52) : (edate(nascimento, 56 * 12) < Dt(2023, 1, 1) ? 56 : 57))
+    : (sexo === "F" ? (edate(nascimento, 56 * 12) < Dt(2023, 1, 1) ? 56 : 57) : (edate(nascimento, 61 * 12) < Dt(2023, 1, 1) ? 61 : 62));
+  const art6Contrib = profOK ? (sexo === "F" ? 25 : 30) : (sexo === "F" ? 30 : 35);
+
+  const art7OK = entradaAntesEC20 && (geralOK || profOK);
+  const art7Idade = profOK ? (sexo === "F" ? 48 : 53) : (sexo === "F" ? 55 : 60);
+  const art7BaseContrib = profOK ? (sexo === "F" ? 23 : 28) : (sexo === "F" ? 30 : 35);
+
+  const dirOK = geralOK || profOK;
+  const dirIdade = profOK ? (sexo === "F" ? 50 : 55) : (sexo === "F" ? 55 : 60);
+  const dirContrib = profOK ? (sexo === "F" ? 25 : 30) : (sexo === "F" ? 30 : 35);
+
+  const polTransOK = entradaAntesEC20 && polOK;
+  const polBaseContrib = sexo === "F" ? 25 : 30;
+  const polBaseCarreira = sexo === "F" ? 15 : 20;
+  const polIdade1 = sexo === "F" ? 51 : 54;
+  const polIdade2 = sexo === "F" ? 50 : 53;
+
+  // ---- P: Permanente pós-EC 20/2020 ----
+  let P = "ANÁLISE_MANUAL";
+  if (!manual && permOK) {
+    P = maxDate(
+      EC20_CUTOFF,
+      edate(nascimento, permIdade * 12),
+      addDays(edate(dtContrib, permContrib * 12), diasExc - PREV_CONTRIB),
+      addDays(edate(dtServPub, permSP * 12), diasExc - spPrevDias),
+      addDays(edate(dtCarreira, permCar * 12), diasExc - carPrevDias),
+      addDays(edate(dtCargo, permCargo * 12), diasExc)
+    );
+  }
+
+  // ---- Q: Transição pontos - art. 6º ----
+  let Q = null;
+  if (art6OK) {
+    Q = maxDate(
+      EC20_CUTOFF,
+      edate(nascimento, art6Idade * 12),
+      addDays(edate(dtContrib, art6Contrib * 12), diasExc - PREV_CONTRIB),
+      addDays(edate(dtServPub, 25 * 12), diasExc - spPrevDias),
+      addDays(edate(dtCargo, 5 * 12), diasExc),
+      dataPts
+    );
+  }
+
+  // ---- R: Transição pedágio 50% - art. 7º (com redutor IPERN) ----
+  let R = null;
+  if (art7OK) {
+    const AV = addDays(edate(dtContrib, art7BaseContrib * 12), diasExc - PREV_CONTRIB - 3);
+    const AW = addDays(AV, Math.ceil(Math.max(0, daysBetween(EC20_CUTOFF, AV)) * 0.5));
+    const idadeDate7 = edate(nascimento, art7Idade * 12);
+    const avgSerial = excelRoundDown((toSerial(idadeDate7) + toSerial(AV)) / 2);
+    const AX = addDays(serialToDate(avgSerial), -1);
+
+    R = maxDate(
+      EC20_CUTOFF,
+      AX,
+      AW,
+      addDays(edate(dtServPub, 20 * 12), diasExc - spPrevDias),
+      addDays(edate(dtCargo, 5 * 12), diasExc)
+    );
+  }
+
+  // ---- S: Policial transição - art. 8º ----
+  let S = null;
+  if (polTransOK) {
+    const path1 = maxDate(
+      edate(nascimento, polIdade1 * 12),
+      addDays(edate(dtContrib, polBaseContrib * 12), diasExc - PREV_CONTRIB),
+      addDays(edate(dtCarreira, polBaseCarreira * 12), diasExc - carPrevDias)
+    );
+    const reqContribPed = polBaseContrib + Math.max(0, polBaseContrib - contribCutoff) * 0.5;
+    const path2 = maxDate(
+      edate(nascimento, polIdade2 * 12),
+      addDays(edate(dtContrib, roundUpMonths(reqContribPed)), diasExc - PREV_CONTRIB),
+      addDays(edate(dtCarreira, polBaseCarreira * 12), diasExc - carPrevDias)
+    );
+    S = maxDate(EC20_CUTOFF, minDate(path1, path2));
+  }
+
+  // ---- T: Direito adquirido pré-EC 20/2020 (inclui EC 47/2005, art. 40) ----
+  // Parte 1: regra antiga (idade/contribuição fixas, já validada)
+  let T = null;
+  if (dirOK) {
+    const candidate = maxDate(
+      edate(nascimento, dirIdade * 12),
+      addDays(edate(dtContrib, dirContrib * 12), diasExc - PREV_CONTRIB),
+      addDays(edate(dtServPub, 10 * 12), diasExc - spPrevDias),
+      addDays(edate(dtCargo, 5 * 12), diasExc)
+    );
+    if (candidate <= EC20_CUTOFF) T = candidate;
+  }
+
+  // Parte 2: regra de transição da EC Federal nº 47/2005 (art. 3º) — só para
+  // quem entrou no serviço público até 16/12/1998 (corte da EC Federal 20/1998).
+  // Permite reduzir a idade mínima em N anos em troca de aumentar em N anos o
+  // tempo de contribuição exigido (testado de N=0 a N=15, ficando com o melhor).
+  const ec47OK = entradaAntesEC20 && dtServPub <= EC98_CUTOFF && (geralOK || profOK || espOK);
+  if (ec47OK) {
+    const spTerm = addDays(edate(dtServPub, 25 * 12), diasExc - spPrevDias - 2);
+    const carTerm = addDays(edate(dtCarreira, 15 * 12), diasExc - carPrevDias - 2);
+    const cargoTerm = addDays(edate(dtCargo, 5 * 12), diasExc - 2);
+    let bestEc47 = null;
+    for (let n = 0; n <= 15; n++) {
+      const idadeTerm = edate(nascimento, (dirIdade - n) * 12);
+      const contribTerm = addDays(edate(dtContrib, (dirContrib + n) * 12), diasExc - PREV_CONTRIB - 2);
+      const candidateN = maxDate(idadeTerm, contribTerm, spTerm, carTerm, cargoTerm);
+      if (bestEc47 === null || candidateN < bestEc47) bestEc47 = candidateN;
+    }
+    if (bestEc47 <= EC20_CUTOFF) {
+      T = (T === null) ? bestEc47 : minDate(T, bestEc47);
+    }
+  }
+
+  const candidatos = [
+    { nome: "Permanente pós-EC 20/2020", data: P instanceof Date ? P : null },
+    { nome: "Transição pontos - art. 6º", data: Q },
+    { nome: "Transição pedágio 50% - art. 7º (com redutor IPERN)", data: R },
+    { nome: "Policial transição - art. 8º", data: S },
+    { nome: "Direito adquirido pré-EC 20/2020 (EC 47/art. 40)", data: T },
+  ].filter((c) => c.data instanceof Date);
+
+  let U = null, V = null;
+  if (candidatos.length > 0) {
+    candidatos.sort((a, b) => a.data.getTime() - b.data.getTime());
+    U = candidatos[0].data;
+    V = candidatos[0].nome;
+  }
+
+  const W = (ativo === "Sim" && U && U <= hoje) ? U : null;
+
+  let X;
+  if (!U) {
+    if (manual) X = "ANÁLISE MANUAL";
+    else if (!dtContrib) X = "";
+    else X = "Sem data automática até 31/12/2065";
+  } else {
+    X = (U <= hoje) ? `Já cumpriu requisitos em ${fmtDate(U)}` : `Cumprirá requisitos em ${fmtDate(U)}`;
+  }
+
+  const Y = U ? yearFrac(nascimento, U) : null;
+  const Z = U ? yearFrac(dtContrib, U) + PREV_CONTRIB / 365.25 - diasExc / 365.25 : null;
+  const AA = U ? yearFrac(dtServPub, U) + spPrevDias / 365.25 - diasExc / 365.25 : null;
+  const AB = U ? yearFrac(dtCargo, U) - diasExc / 365.25 : null;
+
+  const alertasList = [];
+  if (categoria === "Professor" && comprovacao !== "Sim") alertasList.push("Professor sem comprovação específica");
+  if (categoria === "Atividade especial" && comprovacao !== "Sim") alertasList.push("Atividade especial sem comprovação específica");
+  if (categoria === "PcD") alertasList.push("PcD exige avaliação biopsicossocial e regra própria");
+  if (categoria === "Militar estadual") alertasList.push("Militar estadual possui sistema próprio; não calculado");
+  if (diasExc > 0) alertasList.push("Há dias não computáveis informados");
+  if (tcPrevDias > 0) alertasList.push("Contribuição anterior fora do serviço público considerada");
+  if (spPrevDias > 0) alertasList.push("Serviço público anterior contado também como contribuição; não duplicar período");
+  if (carPrevDias > 0) alertasList.push("Tempo anterior de carreira específica considerado");
+
+  let AD = null;
+  if (dtContrib && U) {
+    if (U <= hoje) AD = 1;
+    else AD = Math.max(0, Math.min(1, (hoje - dtContrib) / (U - dtContrib)));
+  }
+
+  return {
+    dataMaisCedo: U, regraMaisFavoravel: V, abonoInicio: W, situacao: X,
+    idadeNaData: Y, contribuicaoNaData: Z, servicoPublicoNaData: AA, cargoNaData: AB,
+    alertas: alertasList, progresso: AD,
+    _debug: { P, Q, R, S, T },
+  };
+}
+
+window.__calc = { calcular, fmtDate, fmtNum, Dt };
+})();
+</script>
+
+<script>
+// ============================================================
+// Interface — leitura do formulário, renderização dos resultados
+// ============================================================
+(function(){
+  const { calcular, fmtDate, fmtNum } = window.__calc;
+
+  function parseDateInput(id){
+    const v = document.getElementById(id).value;
+    if(!v) return null;
+    const [y,m,d] = v.split("-").map(Number);
+    return new Date(y, m-1, d);
+  }
+  function val(id){ return document.getElementById(id).value; }
+  function num(id){ const v = document.getElementById(id).value; return v===""?0:Number(v); }
+
+  function collectInputs(){
+    return {
+      sexo: val("sexo"),
+      nascimento: parseDateInput("nascimento"),
+      dataInicioRN: parseDateInput("dataInicioRN"),
+      dataIngressoSP: parseDateInput("dataIngressoSP"),
+      dataIngressoCarreira: parseDateInput("dataIngressoCarreira"),
+      dataIngressoCargo: parseDateInput("dataIngressoCargo"),
+      categoria: val("categoria"),
+      comprovacao: val("comprovacao"),
+      tcPrevDias: num("tcPrevDias"),
+      spPrevDias: num("spPrevDias"),
+      carPrevDias: num("carPrevDias"),
+      diasExc: num("diasExc"),
+      ativo: val("ativo"),
+    };
+  }
+
+  function setText(id, text){ document.getElementById(id).textContent = text; }
+
+  function render(){
+    const input = collectInputs();
+    const missing = !input.sexo || !input.nascimento || !input.dataInicioRN || !input.categoria || !input.comprovacao || !input.ativo;
+
+    if(missing){
+      setText("dataMaisCedoLabel", "—");
+      setText("regraLabel", "Preencha os dados para calcular");
+      setText("pctNumber", "—");
+      document.getElementById("trackFill").style.width = "0%";
+      document.getElementById("trackMarker").style.left = "0%";
+      document.getElementById("trackFill").classList.remove("done");
+      document.getElementById("trackMarker").classList.remove("done");
+      setText("lblInicio", "—");
+      setText("lblFim", "—");
+      const sb = document.getElementById("statusBanner");
+      sb.className = "status-banner empty";
+      setText("statusText", "Aguardando dados do servidor…");
+      ["rDataMaisCedo","rAbono","rRegra","rIdade","rContrib","rSP","rCargo"].forEach(id=>setText(id,"—"));
+      document.getElementById("alertsBox").classList.remove("show");
+      return;
+    }
+
+    const r = calcular(input);
+
+    setText("dataMaisCedoLabel", r.dataMaisCedo ? fmtDate(r.dataMaisCedo) : "Sem data automática");
+    setText("regraLabel", r.regraMaisFavoravel || (r.manual ? "Categoria exige análise manual" : "Regra não identificada para os dados informados"));
+
+    const pct = r.progresso;
+    const pctPanel = document.getElementById("pctNumber");
+    const fill = document.getElementById("trackFill");
+    const marker = document.getElementById("trackMarker");
+    if(pct==null){
+      pctPanel.textContent = "—";
+      fill.style.width = "0%"; marker.style.left = "0%";
+      fill.classList.remove("done"); marker.classList.remove("done");
+    } else {
+      const pctInt = Math.round(pct*100);
+      pctPanel.textContent = pctInt + "%";
+      fill.style.width = pctInt + "%";
+      marker.style.left = pctInt + "%";
+      const done = pct>=1;
+      fill.classList.toggle("done", done);
+      marker.classList.toggle("done", done);
+    }
+    setText("lblInicio", fmtDate(r.dataInicioRef));
+    setText("lblFim", r.dataMaisCedo ? fmtDate(r.dataMaisCedo) : "—");
+
+    const sb = document.getElementById("statusBanner");
+    if(r.manual || (!r.dataMaisCedo && input.categoria && ["PcD","Militar estadual","Outro/análise manual"].includes(input.categoria))){
+      sb.className = "status-banner manual";
+    } else if(r.jaCumpriu){
+      sb.className = "status-banner met";
+    } else if(r.dataMaisCedo){
+      sb.className = "status-banner pending";
+    } else {
+      sb.className = "status-banner empty";
+    }
+    setText("statusText", r.situacao || "Sem data automática até 31/12/2065");
+
+    setText("rDataMaisCedo", r.dataMaisCedo ? fmtDate(r.dataMaisCedo) : "—");
+    setText("rAbono", r.abonoInicio ? fmtDate(r.abonoInicio) : "—");
+    setText("rRegra", r.regraMaisFavoravel || "—");
+    setText("rIdade", r.idadeNaData!=null ? fmtNum(r.idadeNaData)+" anos" : "—");
+    setText("rContrib", r.contribuicaoNaData!=null ? fmtNum(r.contribuicaoNaData)+" anos" : "—");
+    setText("rSP", r.servicoPublicoNaData!=null ? fmtNum(r.servicoPublicoNaData)+" anos" : "—");
+    setText("rCargo", r.cargoNaData!=null ? fmtNum(r.cargoNaData)+" anos" : "—");
+
+    const alertsBox = document.getElementById("alertsBox");
+    const alertsList = document.getElementById("alertsList");
+    if(r.alertas && r.alertas.length){
+      alertsList.innerHTML = r.alertas.map(a=>`<li>${a}</li>`).join("");
+      alertsBox.classList.add("show");
+    } else {
+      alertsBox.classList.remove("show");
+    }
+
+    window.__lastResult = r;
+    window.__lastInput = input;
+  }
+
+  const form = document.getElementById("calcForm");
+  form.addEventListener("submit", (e)=>{ e.preventDefault(); render(); });
+  form.querySelectorAll("input, select").forEach(el=>{
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+
+  document.getElementById("btnReset").addEventListener("click", ()=>{
+    form.reset();
+    ["tcPrevDias","spPrevDias","carPrevDias","diasExc"].forEach(id=>document.getElementById(id).value=0);
+    render();
+  });
+
+  document.getElementById("btnCopy").addEventListener("click", async ()=>{
+    const r = window.__lastResult;
+    const inp = window.__lastInput;
+    if(!r || r.incompleto){ return; }
+    const nome = val("nome") || "Servidor";
+    const linhas = [
+      `${nome}`,
+      `Situação: ${r.situacao}`,
+      `Regra mais favorável: ${r.regraMaisFavoravel || "—"}`,
+      `Data mais cedo: ${r.dataMaisCedo ? fmtDate(r.dataMaisCedo) : "—"}`,
+      `Início provável do abono: ${r.abonoInicio ? fmtDate(r.abonoInicio) : "—"}`,
+      `Idade na data: ${r.idadeNaData!=null ? fmtNum(r.idadeNaData)+" anos" : "—"}`,
+      `Tempo de contribuição: ${r.contribuicaoNaData!=null ? fmtNum(r.contribuicaoNaData)+" anos" : "—"}`,
+      `Serviço público: ${r.servicoPublicoNaData!=null ? fmtNum(r.servicoPublicoNaData)+" anos" : "—"}`,
+      `Cargo atual: ${r.cargoNaData!=null ? fmtNum(r.cargoNaData)+" anos" : "—"}`,
+      r.progresso!=null ? `Progresso até a elegibilidade: ${Math.round(r.progresso*100)}%` : null,
+      r.alertas && r.alertas.length ? `Alertas: ${r.alertas.join(" | ")}` : null,
+    ].filter(Boolean).join("\n");
+    try{
+      await navigator.clipboard.writeText(linhas);
+      const msg = document.getElementById("copiedMsg");
+      msg.classList.add("show");
+      setTimeout(()=>msg.classList.remove("show"), 2000);
+    }catch(e){
+      alert("Não foi possível copiar automaticamente. Selecione e copie manualmente:\n\n"+linhas);
+    }
+  });
+
+  // exemplo pré-preenchido: caso-teste validado contra a simulação
+  // oficial do IPERN (deve retornar 11/04/2025, art. 7º com redutor)
+  function fillExample(){
+    document.getElementById("nome").value = "MAGNO PEREIRA DA SILVA";
+    document.getElementById("sexo").value = "M";
+    document.getElementById("nascimento").value = "1968-06-04";
+    document.getElementById("dataInicioRN").value = "1990-08-27";
+    document.getElementById("categoria").value = "Geral";
+    document.getElementById("comprovacao").value = "Sim";
+    document.getElementById("tcPrevDias").value = "967";
+    document.getElementById("spPrevDias").value = "315";
+    document.getElementById("ativo").value = "Sim";
+    document.getElementById("observacoes").value = "Caso-teste: deve retornar 11/04/2025, conforme simulação do IPERN.";
+  }
+  fillExample();
+  render();
+})();
+</script>
+</body>
+</html>
